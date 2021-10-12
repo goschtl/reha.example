@@ -1,0 +1,161 @@
+import pytest
+import cromlech.session
+from copy import deepcopy
+from frozendict import frozendict
+from io import BytesIO
+
+
+class MemoryStore(cromlech.session.Store):
+
+    def __init__(self):
+        self._store = {}
+
+    def __iter__(self):
+        return iter(self._store.keys())
+
+    def touch(self, sid):
+        pass
+
+    def get(self, sid):
+        """We return a copy, to avoid mutability by reference."""
+        data = self._store.get(sid)
+        if data is not None:
+            return deepcopy(data)
+        return data
+
+    def set(self, sid, session):
+        self._store[sid] = session
+
+    def clear(self, sid):
+        if sid in self._store:
+            self._store[sid].clear()
+
+    def delete(self, sid):
+        del self._store[sid]
+
+
+@pytest.fixture(scope="session")
+def environ():
+    return frozendict({
+        'REQUEST_METHOD': 'GET',
+        'SCRIPT_NAME': '',
+        'PATH_INFO': '/',
+        'QUERY_STRING': '',
+        'SERVER_NAME': 'test_domain.com',
+        'SERVER_PORT': '80',
+        'HTTP_HOST': 'test_domain.com:80',
+        'SERVER_PROTOCOL': 'HTTP/1.0',
+        'wsgi.url_scheme': 'http',
+        'wsgi.version': (1, 0),
+        'wsgi.run_once': 0,
+        'wsgi.multithread': 0,
+        'wsgi.multiprocess': 0,
+        'wsgi.input': BytesIO(b""),
+        'wsgi.errors': BytesIO()
+    })
+
+
+@pytest.fixture(scope="session")
+def json_post_environ(environ):
+    return frozendict({
+        **environ,
+        'REQUEST_METHOD': 'POST',
+        'SCRIPT_NAME': '/app',
+        'PATH_INFO': '/login',
+        'CONTENT_TYPE': "application/json",
+        'QUERY_STRING': 'action=login&token=abcdef',
+        'wsgi.input': BytesIO(
+            b'''{"username": "test", "password": "test"}'''
+        ),
+    })
+
+
+@pytest.fixture(scope="session")
+def environ_with_user(environ):
+    return frozendict({
+        **environ,
+        'test.principal': {
+            'id': "SomeUser",
+        },
+    })
+
+
+@pytest.fixture
+def session():
+    import cromlech.session
+
+    return cromlech.session.Session("mysession", MemoryStore(), new=True)
+
+
+@pytest.fixture
+def session_middleware(tmp_path):
+    import uvcreha.plugins
+
+    sessions = tmp_path / "sessions"
+    sessions.mkdir()
+    return uvcreha.plugins.session_middleware(
+        sessions, "secret", "mycookie", "test.session"
+    )
+
+
+@pytest.fixture
+def authentication():
+    import reiter.auth.filters
+    import reiter.auth.testing
+    import reiter.auth.components
+
+    session_getter = reiter.auth.components.session_from_environ(
+        'test.session'
+    )
+    return reiter.auth.components.Auth(
+        sources=[reiter.auth.testing.DictSource({"test": "test"})],
+        user_key="test.principal",
+        session_getter=session_getter,
+        filters=[
+            reiter.auth.filters.security_bypass([
+                "/login"
+            ]),
+            reiter.auth.filters.secured(path="/login"),
+        ]
+    )
+
+
+@pytest.fixture
+def user_interface():
+    from reiter.application.browser import registries
+    from uvcreha.request import Request
+
+    ui = registries.UIRegistry()
+
+    @ui.register_layout(Request)
+    class Layout:
+
+        def __init__(self, request, name):
+            self.name = name
+
+        @property
+        def macros(self):
+            return {}
+
+        def render(self, content, **namespace):
+            return content
+
+    return ui
+
+
+@pytest.fixture
+def web_app(user_interface, authentication, session_middleware):
+    import importscan
+    import uvcreha
+    from uvcreha.app import Application
+    from uvcreha.utils import MemoryDatabase
+    from webtest import TestApp as WebApp
+
+    importscan.scan(uvcreha)
+    app = Application(
+        database=MemoryDatabase(),
+        authentication=authentication,
+        ui=user_interface,
+    )
+    wsgi = WebApp(session_middleware(app))
+    return wsgi
