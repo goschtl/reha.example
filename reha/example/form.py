@@ -29,8 +29,15 @@ class TestForm(api.FormView):
 
 
 from uvcreha.browser.document import DefaultDocumentEditForm, DocumentEdit
+from uvcreha.browser.document import DefaultDocumentIndex, DocumentView
 
 
 @DocumentEdit.component('person.1.0')
 class CTDocumentEditForm(DefaultDocumentEditForm):
+    template = TEMPLATES['mytest.pt']
+
+
+
+@DocumentView.component('CT.3.0')
+class CTDocumentEditForm(DefaultDocumentIndex):
     template = TEMPLATES['mytest.pt']

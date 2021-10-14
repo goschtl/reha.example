@@ -33,25 +33,9 @@ def handle_wf(event):
     print(event)
 
 
-@events.subscribe(ObjectAddedEvent, obj=File)
-def handle_file_wf(event):
-    ct, crud = event.request.get_crud("file")
-    crud.update(event.obj, {"state": file_workflow.states.validated.name})
+#@events.subscribe(ObjectAddedEvent, obj=File)
+#def handle_file_wf(event):
+#    ct, crud = event.request.get_crud("file")
+#    crud.update(event.obj, {"state": file_workflow.states.validated.name})
 
 
-from uvcreha.contents import documents_store
-from dataclasses import dataclass, field
-from dataclasses_jsonschema import JsonSchemaMixin
-
-
-@dataclass
-class Person(JsonSchemaMixin):
-
-    name: str = field(
-        metadata=dict(title="The age of the user", description="do not lie!")
-    )
-    surname: str
-    age: int
-
-
-documents_store.add("person", Person.json_schema())
