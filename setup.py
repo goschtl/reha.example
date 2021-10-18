@@ -2,22 +2,18 @@
 
 """The setup script."""
 
-import codecs
-import os
-import re
-
 from setuptools import setup, find_packages
 
 
-with open('README.rst') as readme_file:
+with open("README.rst") as readme_file:
     readme = readme_file.read()
 
-with open('docs/HISTORY.rst') as history_file:
+with open("docs/HISTORY.rst") as history_file:
     history = history_file.read()
 
-requirements = ['borb',] 
+requirements = ["borb", "setuptools"]
 
-setup_requirements = "" 
+setup_requirements = ""
 
 setup(
     name="reha.example",
@@ -25,21 +21,23 @@ setup(
     author_email="ck@novareto.de",
     version="0.1.0",
     description="Example Python namespace package.",
-    long_description=readme + '\n\n' + history,
+    long_description=readme + "\n\n" + history,
     long_description_content_type="text/x-rst",
     url="https://git.bg-kooperation.de",
     install_requires=requirements,
     include_package_data=True,
-    packages=find_packages(include=['reha.example']),
+    packages=find_packages("src"),
+    package_dir={"": "src"},
+    namespace_packages=[
+        "reha",
+    ],
     setup_requires=setup_requirements,
     entry_points={
-        'fanstatic.libraries': [
-            'reha.example  = reha.example.app:library',
+        "fanstatic.libraries": [
+            "reha.example  = reha.example.app:library",
         ],
-        'reiter.application.modules': [
-            'reha.example = reha.example'
-        ],
+        "reiter.application.modules": ["reha.example = reha.example"],
     },
-    test_suite='tests',
+    test_suite="tests",
     zip_safe=False,
 )
