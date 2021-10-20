@@ -9,15 +9,24 @@ import re
 from setuptools import setup, find_packages
 
 
+test_requires = [
+    'WebTest',
+    'importscan',
+    'pytest',
+    'pytest-cov',
+    'reha.testing'
+]
+
+
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
 with open('docs/HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['borb',] 
+requirements = ['borb', 'uvcreha']
 
-setup_requirements = "" 
+setup_requirements = ""
 
 setup(
     name="reha.example",
@@ -39,6 +48,9 @@ setup(
         'reiter.application.modules': [
             'reha.example = reha.example'
         ],
+    },
+    extras_require={
+        'test': test_requires,
     },
     test_suite='tests',
     zip_safe=False,

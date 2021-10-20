@@ -1,12 +1,22 @@
 import uvcreha._api as api
 from reha.example import TEMPLATES
 from wtforms import Form, StringField, TextAreaField, validators
+from uvcreha.browser.document import DefaultDocumentEditForm, DocumentEdit
+from uvcreha.browser.document import DefaultDocumentIndex, DocumentView
 
 
 class MyForm(api.Form):
-    name = StringField(u"Full Name", [validators.required(), validators.length(max=10)])
+    name = StringField(
+        "Full Name", [
+            validators.InputRequired(),
+            validators.length(max=10)
+        ]
+    )
     address = TextAreaField(
-        u"Mailing Address", [validators.optional(), validators.length(max=200)]
+        "Mailing Address", [
+            validators.optional(),
+            validators.length(max=200)
+        ]
     )
 
 
@@ -23,13 +33,6 @@ class TestForm(api.FormView):
         if not form.validate():
             return dict(form=form)
         print(data)
-
-
-
-
-
-from uvcreha.browser.document import DefaultDocumentEditForm, DocumentEdit
-from uvcreha.browser.document import DefaultDocumentIndex, DocumentView
 
 
 @DocumentEdit.component('person.1.0')
