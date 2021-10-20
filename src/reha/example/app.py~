@@ -1,0 +1,41 @@
+"""Main module."""
+
+from fanstatic import Resource, Library
+from uvcreha.browser.views import View
+from uvcreha.app import browser, events
+from uvcreha.events import WorkflowTransitionEvent, ObjectModifiedEvent
+from uvcreha.workflow import document_workflow
+from reha.example import TEMPLATES
+
+
+library = Library('reha.example', 'static')
+
+
+@browser.register("/test")
+class TestView(View):
+
+    template = TEMPLATES["test_views.pt"]
+
+    def GET(self):
+        return dict(request=self.request)
+
+
+
+@events.subscribe(ObjectModifiedEvent)
+def handle_wf(event):
+    print(event)
+
+
+
+from uvcreha.jsonschema import documents_store
+from dataclasses import dataclass, field
+from dataclasses_jsonschema import JsonSchemaMixin
+
+@dataclass
+class Person(JsonSchemaMixin):
+
+    name: str = field(metadata=dict(title='The age of the user', description='do not lie!'))
+    surname: str
+    age: int
+
+documents_store.add('person', Person.json_schema())

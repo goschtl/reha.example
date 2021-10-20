@@ -19,6 +19,6 @@ class Book(JsonSchemaMixin):
 documents_store.add("Book", Book.json_schema())
 
 
-@DocumentEdit.component('Book.1.0')
-class CTDocumentEditForm(DefaultDocumentEditForm):
-    template = TEMPLATES['mytest.pt']
+#@DocumentEdit.component('Book.1.0')
+#class CTDocumentEditForm(DefaultDocumentEditForm):
+#    template = TEMPLATES['mytest.pt']

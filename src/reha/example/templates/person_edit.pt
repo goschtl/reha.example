@@ -1,0 +1,35 @@
+<h1> Person Bearbeiten </h1>
+<p class="lead"> Bitte bearbeiten Sie alle Felder in diesem Formular </p>
+<div>
+  <form method="post"
+        enctype="multipart/form-data"
+        tal:attributes="action view.action"
+        novalidate>
+
+
+		<div class="row">
+			<div class="col">
+        <div tal:define="field form['name']" metal:use-macro="macros['form_group']"> </div>
+			</div>
+			<div class="col">
+        <div tal:define="field form['surname']" metal:use-macro="macros['form_group']"> </div>
+			</div>
+		</div>
+
+		<div class="mb-3">
+        <div tal:define="field form['age']" metal:use-macro="macros['form_group']"> </div>
+		</div>
+
+
+
+    <div class="form-actions">
+      <tal:action repeat="action actions.values()">
+      <button
+          name='form.trigger'
+          tal:attributes="value action.id;
+                             class action.css"
+          type="submit" tal:content="action.title">HTML</button>
+      </tal:action>
+    </div>
+  </form>
+</div>
